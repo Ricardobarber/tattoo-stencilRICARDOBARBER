@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tattoo Procreate Style</title>
+
+<style>
+body{
+background:#0d0d0d;
+color:#fff;
+font-family:-apple-system,Segoe UI;
+padding:15px;
+text-align:center;
+}
+
+h1{
+font-size:22px;
+margin-bottom:15px;
+}
+
+input,button{
+margin:10px 0;
+padding:10px;
+border-radius:8px;
+border:none;
+}
+
+button{
+background:#00ff99;
+font-weight:bold;
+cursor:pointer;
+}
+
+canvas{
+margin-top:15px;
+max-width:100%;
+background:#fff;
+border-radius:12px;
+}
+
+.slider{
+width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🖤 Tattoo Procreate Style</h1>
+
+<input type="file" id="upload" accept="image/*">
+
+<p>Intensidade da Linha</p>
+<input type="range" id="threshold" min="50" max="200" value="120" class="slider">
+
+<p>Espessura</p>
+<input type="range" id="thickness" min="1" max="3" value="1" class="slider">
+
+<br>
+<button onclick="generateStencil()">Gerar Linha Procreate</button>
+<button onclick="downloadImage()">Baixar para Impressão</button>
+
+<br>
+<canvas id="canvas"></canvas>
+
+<script>
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+let img=new Image();
+
+document.getElementById("upload").addEventListener("change",function(e){
+let reader=new FileReader();
+reader.onload=function(event){
+img.onload=function(){
+canvas.width=img.width;
+canvas.height=img.height;
+ctx.drawImage(img,0,0);
+};
+img.src=event.target.result;
+};
+reader.readAsDataURL(e.target.files[0]);
+});
+
+function generateStencil(){
+ctx.drawImage(img,0,0);
+let imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+let data=imageData.data;
+let threshold=document.getElementById("threshold").value;
+
+for(let i=0;i<data.length;i+=4){
+let gray=(data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11);
+let value=gray<threshold?0:255;
+data[i]=data[i+1]=data[i+2]=value;
+}
+
+ctx.putImageData(imageData,0,0);
+
+let thickness=document.getElementById("thickness").value;
+if(thickness>1){
+ctx.lineWidth=thickness;
+ctx.strokeStyle="black";
+ctx.strokeRect(0,0,canvas.width,canvas.height);
+}
+}
+
+function downloadImage(){
+let link=document.createElement("a");
+link.download="tattoo-procreate-stencil.png";
+link.href=canvas.toDataURL("image/png");
+link.click();
+}
+</script>
+
+</body>
+</html>
